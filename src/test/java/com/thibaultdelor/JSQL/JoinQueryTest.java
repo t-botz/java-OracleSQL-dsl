@@ -1,8 +1,12 @@
 package com.thibaultdelor.JSQL;
 
-import static com.thibaultdelor.JSQL.DemoDB.*;
+import static com.thibaultdelor.JSQL.DemoDB.SELL;
+import static com.thibaultdelor.JSQL.DemoDB.SELL_DATE;
+import static com.thibaultdelor.JSQL.DemoDB.SELL_USER_ID;
+import static com.thibaultdelor.JSQL.DemoDB.USER;
+import static com.thibaultdelor.JSQL.DemoDB.USER_ID;
+import static com.thibaultdelor.JSQL.DemoDB.USER_NAME;
 
-import org.hamcrest.text.IsEqualIgnoringWhiteSpace;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -10,7 +14,7 @@ import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.join.ExplicitJoin.JoinType;
 
-public class ComplexQueryTest {
+public class JoinQueryTest {
 
 	@Test
 	public void joinQuery() {
@@ -22,8 +26,8 @@ public class ComplexQueryTest {
 		
 		String expected = "select user.name, sell.date" +
 		" from user, sell" +
-		" where sell.id = user.id";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		" where sell.id=user.id";
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
 	
@@ -35,10 +39,10 @@ public class ComplexQueryTest {
 			.from(USER)
 			.join(JoinType.INNER_JOIN,SELL,SELL_USER_ID,USER_ID);
 		
-		String expected = "select user.name, sell.date" +
+		String expected = "select user.name , sell.date" +
 		" from user" +
-		" inner join sell on (sell.id = user.id)";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		" inner join sell on(sell.id=user.id)";
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
 	
@@ -55,7 +59,7 @@ public class ComplexQueryTest {
 		String expected = "select u1.name, u2.name" +
 				" from user as u1, user as u2" +
 				" where u1.id = u2.id";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 
 	}
 }
