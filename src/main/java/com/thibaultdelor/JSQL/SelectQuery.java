@@ -7,11 +7,13 @@ import com.thibaultdelor.JSQL.SQLOutputable.SQLContext;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.criteria.Criterion;
+import com.thibaultdelor.JSQL.criteria.InCriterion;
 import com.thibaultdelor.JSQL.criteria.LogicalExpression;
 import com.thibaultdelor.JSQL.join.ExplicitJoin.JoinType;
 import com.thibaultdelor.JSQL.join.ImplicitJoin;
 import com.thibaultdelor.JSQL.join.JoinClause;
 import com.thibaultdelor.JSQL.join.OnJoin;
+import com.thibaultdelor.JSQL.literal.LiteralSet;
 
 public class SelectQuery {
 
@@ -71,6 +73,10 @@ public class SelectQuery {
 	public SelectQuery where(Criterion c) {
 		where.add(c);
 		return this;
+	}
+	
+	public SelectQuery whereIn(Column userId, String... values) {
+		return where(new InCriterion(userId, new LiteralSet(values)));
 	}
 	
 	public SelectQuery groupBy(Column c) {

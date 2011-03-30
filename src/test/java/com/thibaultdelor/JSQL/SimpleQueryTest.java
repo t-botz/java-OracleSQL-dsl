@@ -4,7 +4,6 @@ import static com.thibaultdelor.JSQL.DemoDB.USER;
 import static com.thibaultdelor.JSQL.DemoDB.USER_ID;
 import static com.thibaultdelor.JSQL.DemoDB.USER_NAME;
 
-import org.hamcrest.text.IsEqualIgnoringWhiteSpace;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class SimpleQueryTest {
 		s.select(USER_NAME).from(USER);
 		String expected = "select user.name" +
 				" from user";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	
 	@Test
@@ -31,7 +30,7 @@ public class SimpleQueryTest {
 			.from(USER);
 		String expected = "select user.name, user.id" +
 		" from user";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 
 	@Test
@@ -41,7 +40,7 @@ public class SimpleQueryTest {
 		s.select(userU.get(USER_NAME)).from(userU);
 		String expected = "select u.name" +
 		" from user as u";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 
 	@Test
@@ -50,7 +49,7 @@ public class SimpleQueryTest {
 		s.select(USER_NAME.as("n"),USER_ID).from(USER);
 		String expected = "select user.name as n, user.id" +
 		" from user";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	
 	@Test
@@ -59,7 +58,7 @@ public class SimpleQueryTest {
 		s.select(USER_NAME).hints(Hint.ORDERED).from(USER);
 		String expected = "select /*+ ORDERED */ user.name" +
 		" from user";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	
 	@Test
@@ -71,7 +70,7 @@ public class SimpleQueryTest {
 		String expected = "select user.name, user.id" +
 		" from user" +
 		" where user.name = 'hello'";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 
 	@Test
@@ -83,7 +82,7 @@ public class SimpleQueryTest {
 		String expected = "select user.name, user.id" +
 		" from user" +
 		" group by user.name";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	
 	@Test
@@ -97,7 +96,7 @@ public class SimpleQueryTest {
 		" from user" +
 		" group by user.id" +
 		" having user.id > 5";
-		Assert.assertThat(s.toSQLString(), new IsEqualIgnoringWhiteSpace(expected));
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	
 }
