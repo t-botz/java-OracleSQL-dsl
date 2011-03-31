@@ -1,6 +1,9 @@
 package com.thibaultdelor.JSQL.criteria;
 
+import java.util.Set;
+
 import com.thibaultdelor.JSQL.SQLOutputable;
+import com.thibaultdelor.JSQL.Table;
 
 abstract class PostFixedCriterion implements Criterion{
 	
@@ -18,4 +21,10 @@ abstract class PostFixedCriterion implements Criterion{
 		sb.append(operator);
 	}
 
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		member.addNeededTables(tables);
+	}
+
+	
 }

@@ -1,5 +1,7 @@
 package com.thibaultdelor.JSQL;
 
+import java.util.Set;
+
 public class Column implements SQLOutputable {
 
 	private final Table table;
@@ -104,6 +106,12 @@ public class Column implements SQLOutputable {
 
 	public void setInUsing(boolean inUsing) {
 		this.isInUsing = inUsing;
+		
+	}
+
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		tables.add(table);
 		
 	}
 

@@ -1,5 +1,7 @@
 package com.thibaultdelor.JSQL.join;
 
+import java.util.Set;
+
 import com.thibaultdelor.JSQL.SQLOutputable;
 import com.thibaultdelor.JSQL.Table;
 import com.thibaultdelor.JSQL.criteria.Criterion;
@@ -33,5 +35,12 @@ public class OnJoin implements ExplicitJoin{
 	@Override
 	public Table getJoinTable() {
 		return joinTable;
+	}
+
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		joinTable.addNeededTables(tables);
+		criterion.addNeededTables(tables);
+		joinType.addNeededTables(tables);
 	}
 }

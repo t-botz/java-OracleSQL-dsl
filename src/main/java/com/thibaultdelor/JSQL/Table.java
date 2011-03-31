@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class Table implements SQLOutputable {
 
@@ -80,5 +81,54 @@ public class Table implements SQLOutputable {
 			throw new RuntimeException("Invalid context " + context + " for "
 					+ this);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Table other = (Table) obj;
+		if (alias == null) {
+			if (other.alias != null)
+				return false;
+		} else if (!alias.equals(other.alias))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+	
+	/**
+	 * Checks if is the same table (same name).
+	 *
+	 * @param table the table
+	 * @return true, if is same table
+	 */
+	public boolean isSameTable(Table table) {
+		if(table==null)
+		return false;
+		
+		return name.equals(table.name);
+	}
+
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		tables.add(this);
 	}
 }

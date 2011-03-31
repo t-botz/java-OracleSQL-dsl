@@ -1,6 +1,9 @@
 package com.thibaultdelor.JSQL.criteria;
 
+import java.util.Set;
+
 import com.thibaultdelor.JSQL.SQLOutputable;
+import com.thibaultdelor.JSQL.Table;
 
 public class BinaryCriterion implements Criterion{
 
@@ -29,6 +32,11 @@ public class BinaryCriterion implements Criterion{
 			sb.append(representation);
 			
 		}
+
+		@Override
+		public void addNeededTables(Set<Table> tables) {
+			return;
+		}
 	}
 	
 	private final SQLOutputable left; 
@@ -51,6 +59,16 @@ public class BinaryCriterion implements Criterion{
 		left.output(sb, context);
 		operator.output(sb, context);
 		right.output(sb, context);
+		
+	}
+
+
+
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		left.addNeededTables(tables);
+		operator.addNeededTables(tables);
+		right.addNeededTables(tables);
 		
 	}
 	

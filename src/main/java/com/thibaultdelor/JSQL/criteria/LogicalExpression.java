@@ -2,8 +2,10 @@ package com.thibaultdelor.JSQL.criteria;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.thibaultdelor.JSQL.OutputUtils;
+import com.thibaultdelor.JSQL.Table;
 
 public class LogicalExpression implements Criterion {
 
@@ -39,5 +41,12 @@ public class LogicalExpression implements Criterion {
 	
 	public int size() {
 		return criteria.size();
+	}
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		for (Criterion c : criteria) {
+			c.addNeededTables(tables);
+		}
+		
 	}
 }

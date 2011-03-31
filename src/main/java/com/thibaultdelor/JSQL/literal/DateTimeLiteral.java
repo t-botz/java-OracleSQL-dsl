@@ -6,13 +6,15 @@ import java.util.Date;
 
 public class DateTimeLiteral extends SimpleLiteral {
 	
-	private static final DateFormat FORMATTER = new SimpleDateFormat("''yyyy-MM-dd HH:mm:ss.S''");
+	private static final DateFormat javaDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	private static final String oracledateFormat = "MM/DD/YYYY HH24:MI:SS";
 	
-	public DateTimeLiteral(Date d) {
-		super(getFormattedDate(d));
+	public DateTimeLiteral(Date date) {
+		super(getStringRepresentation(date));
 	}
-	
-	private static String getFormattedDate(Date d) {
-		return FORMATTER.format(d);
+
+	public static String getStringRepresentation(Date date) {
+		return "to_date('" + javaDateFormat.format(date) + "','"
+				+ oracledateFormat + "')";
 	}
 }

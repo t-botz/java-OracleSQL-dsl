@@ -7,4 +7,5 @@ public class IsNotNull extends PostFixedCriterion {
 	IsNotNull(SQLOutputable member) {
 		super(member, " IS NOT NULL");
 	}
+
 }

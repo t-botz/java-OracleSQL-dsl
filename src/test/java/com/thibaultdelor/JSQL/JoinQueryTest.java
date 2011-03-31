@@ -30,6 +30,26 @@ public class JoinQueryTest {
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
+	@Test
+	public void autoFromQuery() {
+		SelectQuery s = 
+			new SelectQuery()
+		.select(USER_NAME,SELL_DATE)
+		.where(new BinaryCriterion(SELL_USER_ID,BinaryOperator.EQUAL,USER_ID));
+		
+		try {
+			s.toSQLString();
+			Assert.fail("Select pass while no table!");
+		} catch (IllegalStateException e) {}
+		
+		s.autoAddFrom();
+		
+		String expected = "select user.name, sell.date" +
+		" from user, sell" +
+		" where sell.id=user.id";
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
+		
+	}
 	
 	@Test
 	public void innerJoinQuery() {

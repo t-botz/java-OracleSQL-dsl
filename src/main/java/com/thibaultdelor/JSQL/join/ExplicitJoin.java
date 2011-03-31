@@ -1,8 +1,12 @@
 package com.thibaultdelor.JSQL.join;
 
+import java.util.Set;
+
 import com.thibaultdelor.JSQL.SQLOutputable;
+import com.thibaultdelor.JSQL.Table;
 
 public interface ExplicitJoin extends JoinClause,SQLOutputable {
+	
 	public static enum JoinType implements SQLOutputable{
 		JOIN("JOIN"),
 		INNER_JOIN("INNER JOIN"),
@@ -23,5 +27,11 @@ public interface ExplicitJoin extends JoinClause,SQLOutputable {
 			sb.append(representation);
 			sb.append(" ");
 		}
+
+		@Override
+		public void addNeededTables(Set<Table> tables) {
+			return;
+		}
 	}
+	
 }

@@ -1,7 +1,10 @@
 package com.thibaultdelor.JSQL;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.thibaultdelor.JSQL.SQLOutputable.SQLContext;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
@@ -9,6 +12,7 @@ import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.criteria.Criterion;
 import com.thibaultdelor.JSQL.criteria.InCriterion;
 import com.thibaultdelor.JSQL.criteria.LogicalExpression;
+import com.thibaultdelor.JSQL.join.ExplicitJoin;
 import com.thibaultdelor.JSQL.join.ExplicitJoin.JoinType;
 import com.thibaultdelor.JSQL.join.ImplicitJoin;
 import com.thibaultdelor.JSQL.join.JoinClause;
@@ -17,84 +21,184 @@ import com.thibaultdelor.JSQL.literal.LiteralSet;
 
 public class SelectQuery {
 
-	private final List<Hint> hints = new ArrayList<Hint>(0); 
+	private final List<Hint> hints = new ArrayList<Hint>(0);
 	private final List<Column> columns = new ArrayList<Column>();
-	private final List<Table> from = new ArrayList<Table>();
-	private final List<JoinClause> join= new ArrayList<JoinClause>();
-	private final LogicalExpression where = new LogicalExpression("","\nAND ","");
+	private final LinkedHashSet<Table> from = new LinkedHashSet<Table>();
+	private final List<JoinClause> join = new ArrayList<JoinClause>();
+	private final LogicalExpression where = new LogicalExpression("", "\nAND ",
+			"");
 	private final List<Column> groupBy = new ArrayList<Column>();
 	private final List<Criterion> having = new ArrayList<Criterion>();
-	private final List<Column> orderBy = new ArrayList<Column>();
-	
+	private final List<OrderClause> orderBy = new ArrayList<OrderClause>();
+
+	private final Set<Table> allReferencedTables = new HashSet<Table>(4);
+
 	public SelectQuery select(Column... cols) {
 		for (Column c : cols) {
-			columns.add(c);
+			if (columns.add(c))
+				c.addNeededTables(allReferencedTables);
 		}
 		return this;
 	}
 
 	public SelectQuery hints(Hint... hints) {
 		for (Hint hint : hints) {
-			this.hints.add(hint);
-		}
-		return this;
-	}
-	
-	public SelectQuery from(Table t){
-		from.add(t);
-		return this;
-	}
-	
-	public SelectQuery join(JoinClause jc){
-		join.add(jc);
-		if (jc instanceof ImplicitJoin) {
-			ImplicitJoin implicitJoin = (ImplicitJoin) jc;
-			from(implicitJoin.getJoinTable());
-			where(implicitJoin.getCriterion());
+			if (this.hints.add(hint))
+				hint.addNeededTables(allReferencedTables);
 		}
 		return this;
 	}
 
-	public SelectQuery join(Table joinTable, Criterion criterion){
-		return join(new ImplicitJoin(joinTable, criterion));
-	}
-	
-	public SelectQuery join(Table joinTable, Column mycolumn, Column foreigncolumn){
-		return join(joinTable, new BinaryCriterion(mycolumn,BinaryOperator.EQUAL,foreigncolumn));
-	}
-	
-	public SelectQuery join(JoinType type, Table joinTable, Criterion criterion){
-		return join(new OnJoin(type, joinTable, criterion));
-	}
-	public SelectQuery join(JoinType type, Table joinTable, Column mycolumn, Column foreigncolumn){
-		return join(type, joinTable, new BinaryCriterion(mycolumn,BinaryOperator.EQUAL,foreigncolumn));
-	}
-	
-	public SelectQuery where(Criterion c) {
-		where.add(c);
+	public SelectQuery from(Table t) {
+		if (from.add(t))
+			t.addNeededTables(allReferencedTables);
 		return this;
 	}
-	
+
+	public SelectQuery join(JoinClause jc) {
+		if (join.add(jc)) {
+			if (jc instanceof ImplicitJoin) {
+				ImplicitJoin implicitJoin = (ImplicitJoin) jc;
+				from(implicitJoin.getJoinTable());
+				where(implicitJoin.getCriterion());
+			} else
+				((ExplicitJoin) jc).addNeededTables(allReferencedTables);
+		}
+		return this;
+	}
+
+	public SelectQuery join(Table joinTable, Criterion criterion) {
+		return join(new ImplicitJoin(joinTable, criterion));
+	}
+
+	public SelectQuery join(Table joinTable, Column mycolumn,
+			Column foreigncolumn) {
+		return join(joinTable, new BinaryCriterion(mycolumn,
+				BinaryOperator.EQUAL, foreigncolumn));
+	}
+
+	public SelectQuery join(JoinType type, Table joinTable, Criterion criterion) {
+		return join(new OnJoin(type, joinTable, criterion));
+	}
+
+	public SelectQuery join(JoinType type, Table joinTable, Column mycolumn,
+			Column foreigncolumn) {
+		return join(type, joinTable, new BinaryCriterion(mycolumn,
+				BinaryOperator.EQUAL, foreigncolumn));
+	}
+
+	public SelectQuery where(Criterion c) {
+		where.add(c);
+		c.addNeededTables(allReferencedTables);
+		return this;
+	}
+
 	public SelectQuery whereIn(Column userId, String... values) {
 		return where(new InCriterion(userId, new LiteralSet(values)));
 	}
-	
+
 	public SelectQuery groupBy(Column c) {
-		groupBy.add(c);
+		if (groupBy.add(c))
+			c.addNeededTables(allReferencedTables);
 		return this;
-		
+
 	}
-	
+
 	public SelectQuery having(Criterion c) {
-		having.add(c);
+		if (having.add(c))
+			c.addNeededTables(allReferencedTables);
 		return this;
 	}
-	
-	public SelectQuery orderBy(Column c) {
-		orderBy.add(c);
+
+	public SelectQuery orderBy(OrderClause oc) {
+		if (orderBy.add(oc))
+			oc.addNeededTables(allReferencedTables);
 		return this;
 	}
+
+	public SelectQuery orderBy(Column c, boolean asc) {
+		return orderBy(new OrderClause(c, asc));
+	}
+
+	/**
+	 * Add all necessary missing tables in the from clause.
+	 */
+	public void autoAddFrom() {
+		Set<Table> missingTables = getMissingTables();
+
+		for (Table table : missingTables) {
+			from.add(table);
+		}
+	}
+
+	/**
+	 * Based on declared foreign keys, it joins all missing table.<br />
+	 * <br />
+	 * 
+	 * <b>syntax sugar for autoJoin(JoinType.INNER_JOIN, 1);</b>
+	 * 
+	 * @see SelectQuery#autoJoin(JoinType, int)
+	 */
+	public void autoJoin() {
+		autoJoin(JoinType.INNER_JOIN, 0);
+	}
+
+	/**
+	 * Auto join missing tables. It looks for the most optimum joins sequence.
+	 * The depth of this algorithms is the maximum number of joins allowed per
+	 * missing table.<br/>
+	 * <br/>
+	 * The criteria for determining the optimum join sequence are the number of
+	 * joins clause necessary, and then the order of the declaration of foreign
+	 * keys.<br />
+	 * e.g. if for one table to autojoin the first declared foreign key
+	 * reference an existing table, it will be joined thanks to its foreign key
+	 * because no other foreign keys can do better.<br/>
+	 * On the other hand if the first key reference a table that is not in the query
+	 * but which has a foreign key that reference an existing table, we will need
+	 * two join clause. So, we will check if the next key of our table reference
+	 * an existing table, if yes this keys will be used since we just need only
+	 * one join clause.
+	 * 
+	 * 
+	 * @param joinType
+	 *            the join type to use
+	 * @param depth
+	 *            the maximum depth of foreign key relation between tables, 0 for unlimited
+	 */
+	public void autoJoin(JoinType joinType, int depth) {
+		if(depth<1)
+			throw new IllegalArgumentException("depth mustn't be negative");
+		if(depth==0)
+			depth = Integer.MAX_VALUE;
+		Set<Table> missingTables = getMissingTables();
+		Set<Table> existingTables = getExistingTables();
+		JoinResolver joinResolver = new JoinResolver(missingTables, existingTables, depth);
+		List<JoinClause> joinClauses = joinResolver.resolve(joinType);
+		
+		for (JoinClause jc : joinClauses) {
+			join(jc);
+		}
+	}
 	
+	private Set<Table> getExistingTables() {
+		Set<Table> joinedTables = new HashSet<Table>(from);
+		for (JoinClause jc : join) {
+			joinedTables.add(jc.getJoinTable());
+		}
+		return joinedTables;
+	}
+	private Set<Table> getMissingTables() {
+		Set<Table> missingTables = new HashSet<Table>(allReferencedTables);
+		missingTables.removeAll(from);
+		Set<Table> joinedTables = new HashSet<Table>(4);
+		for (JoinClause jc : join) {
+			joinedTables.add(jc.getJoinTable());
+		}
+		missingTables.removeAll(joinedTables);
+		return missingTables;
+	}
+
 	public String toSQLString() {
 		StringBuilder query = new StringBuilder();
 		appendSelect(query);
@@ -103,14 +207,13 @@ public class SelectQuery {
 		appendGroupBy(query);
 		appendHaving(query);
 		appendOrderBy(query);
-		
+
 		return query.toString();
 	}
 
 	private void appendSelect(StringBuilder query) {
 		query.append("SELECT ");
-		if(hints.size()>0)
-		{
+		if (hints.size() > 0) {
 			query.append("/*+ ");
 			OutputUtils.strJoin(hints, " ", query, SQLContext.SELECT);
 			query.append(" */ ");
@@ -119,53 +222,55 @@ public class SelectQuery {
 	}
 
 	private void appendFrom(StringBuilder query) {
-		//Implicit join
+		if(from.isEmpty())
+			throw new IllegalStateException("No Table in from clause!");
+		// Implicit join
 		query.append("\nFROM ");
 		OutputUtils.strJoin(from, ", ", query, SQLContext.FROM);
-		
-		//Explicit join
+
+		// Explicit join
 		List<SQLOutputable> explicitJoins = new ArrayList<SQLOutputable>();
 		for (JoinClause join : this.join) {
 			if (join instanceof SQLOutputable) {
 				explicitJoins.add((SQLOutputable) join);
 			}
 		}
-		if(explicitJoins.size()>0)
-		{
+		if (explicitJoins.size() > 0) {
 			query.append("\n");
 			OutputUtils.strJoin(explicitJoins, "\n", query, SQLContext.FROM);
 		}
 	}
 
 	private void appendWhere(StringBuilder query) {
-		if(where.size()==0)
+		if (where.size() == 0)
 			return;
-		
+
 		query.append("\nWHERE ");
 		where.output(query, SQLContext.WHERE);
 	}
 
 	private void appendGroupBy(StringBuilder query) {
-		if(groupBy.size()==0)
+		if (groupBy.size() == 0)
 			return;
-		
+
 		query.append("\nGROUP BY ");
 		OutputUtils.strJoin(groupBy, ", ", query, SQLContext.GROUPBY);
 	}
 
 	private void appendHaving(StringBuilder query) {
-		if(having.size()==0)
+		if (having.size() == 0)
 			return;
-		
+
 		query.append("\nHAVING ");
 		OutputUtils.strJoin(having, "\nAND ", query, SQLContext.HAVING);
 	}
-	
+
 	private void appendOrderBy(StringBuilder query) {
-		if(orderBy.size()==0)
+		if (orderBy.size() == 0)
 			return;
-		
+
 		query.append("\nORDER BY ");
+
 		OutputUtils.strJoin(orderBy, ", ", query, SQLContext.ORDER);
 	}
 }

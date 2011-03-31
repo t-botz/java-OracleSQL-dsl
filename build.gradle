@@ -2,7 +2,12 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.6
+version = '0.0.1'
 
+manifest.mainAttributes(
+    'Implementation-Title': 'java-OracleSQL-dsl',
+    'Implementation-Version': '0.0.1'
+)
 
 repositories {
     mavenCentral()

@@ -1,6 +1,9 @@
 package com.thibaultdelor.JSQL.criteria;
 
+import java.util.Set;
+
 import com.thibaultdelor.JSQL.SQLOutputable;
+import com.thibaultdelor.JSQL.Table;
 import com.thibaultdelor.JSQL.literal.LiteralSet;
 
 public class InCriterion implements Criterion{
@@ -19,6 +22,13 @@ public class InCriterion implements Criterion{
 		sb.append(" IN (");
 		values.output(sb, context);
 		sb.append(")");
+		
+	}
+
+	@Override
+	public void addNeededTables(Set<Table> tables) {
+		column.addNeededTables(tables);
+		values.addNeededTables(tables);
 		
 	}
 
