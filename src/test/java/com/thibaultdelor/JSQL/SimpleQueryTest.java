@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
+import com.thibaultdelor.JSQL.literal.FunctionCall;
 import com.thibaultdelor.JSQL.literal.SimpleLiteral;
 import com.thibaultdelor.JSQL.literal.StringLiteral;
 
@@ -96,6 +97,15 @@ public class SimpleQueryTest {
 		" from user" +
 		" group by user.id" +
 		" having user.id > 5";
+		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
+	}
+	
+	@Test
+	public void functionQuery() {
+		SelectQuery s = new SelectQuery();
+		s.select(new FunctionCall("myfunction", USER_NAME)).from(USER);
+		String expected = "select myfunction(user.name)" +
+				" from user";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 	

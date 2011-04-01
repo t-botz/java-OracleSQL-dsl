@@ -22,7 +22,7 @@ import com.thibaultdelor.JSQL.literal.LiteralSet;
 public class SelectQuery {
 
 	private final List<Hint> hints = new ArrayList<Hint>(0);
-	private final List<Column> columns = new ArrayList<Column>();
+	private final List<SQLOutputable> columns = new ArrayList<SQLOutputable>();
 	private final LinkedHashSet<Table> from = new LinkedHashSet<Table>();
 	private final List<JoinClause> join = new ArrayList<JoinClause>();
 	private final LogicalExpression where = new LogicalExpression("", "\nAND ",
@@ -33,8 +33,8 @@ public class SelectQuery {
 
 	private final Set<Table> allReferencedTables = new HashSet<Table>(4);
 
-	public SelectQuery select(Column... cols) {
-		for (Column c : cols) {
+	public SelectQuery select(SQLOutputable... cols) {
+		for (SQLOutputable c : cols) {
 			if (columns.add(c))
 				c.addNeededTables(allReferencedTables);
 		}
