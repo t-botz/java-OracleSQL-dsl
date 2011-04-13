@@ -30,6 +30,10 @@ public class Table implements SQLOutputable {
 		return (alias == null) ? name : alias;
 	}
 
+	public String getName() {
+		return name;
+	}
+
 	public Collection<Column> getColumns() {
 		return Collections.unmodifiableList(columns);
 	}
@@ -65,6 +69,14 @@ public class Table implements SQLOutputable {
 
 	public void addForeignKey(Column origin, Column reference) {
 		foreignKeys.put(origin, reference);
+		reference.getTable().foreignKeys.put(reference, origin);
+	}
+	
+	public Column getForeignColumn(Column origin){
+		return foreignKeys.get(origin);
+	}
+	public Column getForeignColumn(String origin){
+		return getForeignColumn(get(origin));
 	}
 
 	@Override
@@ -73,7 +85,7 @@ public class Table implements SQLOutputable {
 		case FROM:
 			sb.append(name);
 			if (alias != null) {
-				sb.append(" AS ");
+				sb.append(" ");
 				sb.append(alias);
 			}
 			break;

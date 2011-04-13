@@ -40,7 +40,7 @@ public class SimpleQueryTest {
 		Table userU = USER.as("u");
 		s.select(userU.get(USER_NAME)).from(userU);
 		String expected = "select u.name" +
-		" from user as u";
+		" from user u";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
 

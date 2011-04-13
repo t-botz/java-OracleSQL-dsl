@@ -27,11 +27,15 @@ public class SelectQuery {
 	private final List<JoinClause> join = new ArrayList<JoinClause>();
 	private final LogicalExpression where = new LogicalExpression("", "\nAND ",
 			"");
-	private final List<Column> groupBy = new ArrayList<Column>();
+	private final List<SQLOutputable> groupBy = new ArrayList<SQLOutputable>();
 	private final List<Criterion> having = new ArrayList<Criterion>();
 	private final List<OrderClause> orderBy = new ArrayList<OrderClause>();
 
 	private final Set<Table> allReferencedTables = new HashSet<Table>(4);
+	
+	
+	/** The join resolver use for auto join (lazy initialized). */
+	private JoinResolver joinResolver = null;
 
 	public SelectQuery select(SQLOutputable... cols) {
 		for (SQLOutputable c : cols) {
@@ -97,9 +101,9 @@ public class SelectQuery {
 		return where(new InCriterion(userId, new LiteralSet(values)));
 	}
 
-	public SelectQuery groupBy(Column c) {
-		if (groupBy.add(c))
-			c.addNeededTables(allReferencedTables);
+	public SelectQuery groupBy(SQLOutputable groupCol) {
+		if (groupBy.add(groupCol))
+			groupCol.addNeededTables(allReferencedTables);
 		return this;
 
 	}
@@ -167,28 +171,27 @@ public class SelectQuery {
 	 *            the maximum depth of foreign key relation between tables, 0 for unlimited
 	 */
 	public void autoJoin(JoinType joinType, int depth) {
-		if(depth<1)
+		if(depth<0)
 			throw new IllegalArgumentException("depth mustn't be negative");
 		if(depth==0)
 			depth = Integer.MAX_VALUE;
-		Set<Table> missingTables = getMissingTables();
-		Set<Table> existingTables = getExistingTables();
-		JoinResolver joinResolver = new JoinResolver(missingTables, existingTables, depth);
-		List<JoinClause> joinClauses = joinResolver.resolve(joinType);
-		
-		for (JoinClause jc : joinClauses) {
-			join(jc);
+		if(joinResolver == null){
+			joinResolver = new JoinResolver(this, depth);
 		}
+		else {
+			joinResolver.setDepth(depth);
+		}
+		joinResolver.resolve(joinType);
 	}
 	
-	private Set<Table> getExistingTables() {
+	Set<Table> getExistingTables() {
 		Set<Table> joinedTables = new HashSet<Table>(from);
 		for (JoinClause jc : join) {
 			joinedTables.add(jc.getJoinTable());
 		}
 		return joinedTables;
 	}
-	private Set<Table> getMissingTables() {
+	Set<Table> getMissingTables() {
 		Set<Table> missingTables = new HashSet<Table>(allReferencedTables);
 		missingTables.removeAll(from);
 		Set<Table> joinedTables = new HashSet<Table>(4);

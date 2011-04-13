@@ -61,7 +61,7 @@ public class JoinQueryTest {
 		
 		String expected = "select user.name , sell.date" +
 		" from user" +
-		" inner join sell on(sell.id=user.id)";
+		" inner join sell on sell.id=user.id";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
@@ -77,7 +77,7 @@ public class JoinQueryTest {
 		s	.select(u.get(USER_NAME))
 			.join(u,  new BinaryCriterion(id1, BinaryOperator.EQUAL, id2));
 		String expected = "select u1.name, u2.name" +
-				" from user as u1, user as u2" +
+				" from user u1, user u2" +
 				" where u1.id = u2.id";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 

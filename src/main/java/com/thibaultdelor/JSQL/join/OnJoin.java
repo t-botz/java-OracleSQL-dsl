@@ -27,9 +27,8 @@ public class OnJoin implements ExplicitJoin{
 	public void output(StringBuilder sb, SQLContext context) {
 		joinType.output(sb, context);
 		joinTable.output(sb, context);
-		sb.append(" ON (");
+		sb.append(" ON ");
 		criterion.output(sb, context);
-		sb.append(")");
 	}
 
 	@Override
