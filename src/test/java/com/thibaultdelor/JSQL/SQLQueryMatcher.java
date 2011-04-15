@@ -5,6 +5,8 @@ import org.hamcrest.Description;
 
 public class SQLQueryMatcher extends BaseMatcher<CharSequence> {
 
+
+	private final String originalExpectedQuery;
 	private final String expectedQuery;
 
 	private static final char[] whiteSpaceNotSensitiveChars = { ',', '(', ')',
@@ -14,7 +16,8 @@ public class SQLQueryMatcher extends BaseMatcher<CharSequence> {
 		if (expectedQuery == null)
 			throw new IllegalArgumentException(
 					"Non-null value required by SQLQueryMatcher");
-		this.expectedQuery = minimizeQuery(expectedQuery.toString());
+		this.originalExpectedQuery = expectedQuery.toString();
+		this.expectedQuery = minimizeQuery(originalExpectedQuery);
 	}
 
 	@Override
@@ -23,7 +26,24 @@ public class SQLQueryMatcher extends BaseMatcher<CharSequence> {
 			throw new IllegalArgumentException("Cannot match to a null value");
 		
 		String minimizedQuery = minimizeQuery(match.toString());
-		return minimizedQuery.equalsIgnoreCase(expectedQuery);
+		boolean equals = minimizedQuery.equals(expectedQuery);
+		
+		if(!equals){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("\nOriginal Queries");
+			sb.append("\n  expected : ");
+			sb.append(originalExpectedQuery);
+			sb.append("\n  got      : ");
+			sb.append(match.toString());
+			sb.append("\nMinimized Queries");
+			sb.append("\n  expected : ");
+			sb.append(expectedQuery);
+			sb.append("\n  got      : ");
+			sb.append(minimizedQuery);
+			throw new AssertionError(sb.toString());
+		}
+		return equals;
 	}
 
 	@Override
@@ -43,26 +63,26 @@ public class SQLQueryMatcher extends BaseMatcher<CharSequence> {
 	 */
 	public static String minimizeQuery(String query) {
 		StringBuilder result = new StringBuilder();
-		boolean lastWasSpace = true;
+		int lastType =0; //0 whitespace, 1 whitespace sensitive, 2 char
 		for (int i = 0; i < query.length(); ++i) {
 			char c = query.charAt(i);
 			if (Character.isWhitespace(c)) {
-				if (!(lastWasSpace)) {
+				if (lastType==2) {
 					result.append(' ');
 				}
-				lastWasSpace = true;
+				lastType = 0;
 			} else if (!isWhiteSpaceSensitive(c)) {
-				if (lastWasSpace && result.length() > 0)
+				if (lastType==0 && result.length() > 0)
 					result.deleteCharAt(result.length() - 1);
 
 				result.append(c);
-				lastWasSpace = true;
+				lastType = 1;
 			} else {
 				result.append(c);
-				lastWasSpace = false;
+				lastType = 2;
 			}
 		}
-		return result.toString().trim();
+		return result.toString().trim().toLowerCase();
 	}
 
 	private static boolean isWhiteSpaceSensitive(char c) {
