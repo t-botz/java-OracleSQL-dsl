@@ -9,9 +9,9 @@ import org.junit.Test;
 
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
-import com.thibaultdelor.JSQL.literal.FunctionCall;
 import com.thibaultdelor.JSQL.literal.SimpleLiteral;
 import com.thibaultdelor.JSQL.literal.StringLiteral;
+import com.thibaultdelor.JSQL.literal.functions.SimpleFunction;
 
 public class SimpleQueryTest {
 
@@ -103,7 +103,7 @@ public class SimpleQueryTest {
 	@Test
 	public void functionQuery() {
 		SelectQuery s = new SelectQuery();
-		s.select(new FunctionCall("myfunction", USER_NAME)).from(USER);
+		s.select(new SimpleFunction("myfunction", USER_NAME)).from(USER);
 		String expected = "select myfunction(user.name)" +
 				" from user";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
