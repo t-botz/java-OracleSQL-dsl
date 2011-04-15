@@ -3,18 +3,98 @@ package com.thibaultdelor.JSQL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 public class Table implements SQLOutputable {
 
+	class ForeignKey {
+		private Column foreignKey;
+		private Column primaryKey;
+
+		public ForeignKey(Column foreignKey, Column primaryKey) {
+			if(!isMine(primaryKey)&& !isMine(foreignKey))
+				throw new RuntimeException("Invalid foreign key!");
+			this.foreignKey = foreignKey;
+			this.primaryKey = primaryKey;
+		}
+
+		public Column getForeignKey() {
+			return foreignKey;
+		}
+
+		public Column getPrimaryKey() {
+			return primaryKey;
+		}
+
+		private Table getMyTable() {
+			return Table.this;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getMyTable().hashCode();
+			result = prime * result
+					+ ((foreignKey == null) ? 0 : foreignKey.hashCode());
+			result = prime * result
+					+ ((primaryKey == null) ? 0 : primaryKey.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ForeignKey other = (ForeignKey) obj;
+			if (!getMyTable().equals(other.getMyTable()))
+				return false;
+			if (foreignKey == null) {
+				if (other.foreignKey != null)
+					return false;
+			} else if (!foreignKey.equals(other.foreignKey))
+				return false;
+			if (primaryKey == null) {
+				if (other.primaryKey != null)
+					return false;
+			} else if (!primaryKey.equals(other.primaryKey))
+				return false;
+			return true;
+		}
+
+		private ForeignKey duplicateFor(Table t) {
+			
+			Column first = isMine(foreignKey)
+					? new Column(t, foreignKey.getName())
+					: foreignKey;
+			Column second = isMine(primaryKey) 
+					? new Column(t, primaryKey.getName())
+					: primaryKey;
+			return t.new ForeignKey(first, second);
+		}
+
+		private boolean isMine(Column col) {
+			return col.getTable().equals(getMyTable());
+		}
+		
+		public Column getRemoteColumn() {
+			return isMine(primaryKey)?foreignKey:primaryKey;
+		}
+		public Column getMyColumn() {
+			return isMine(primaryKey)?primaryKey:foreignKey;
+		}
+	}
+
 	private final String name;
 	private final String alias;
 	private final List<Column> columns = new ArrayList<Column>();
-	private final Map<Column, Column> foreignKeys = new HashMap<Column, Column>();
+	private final Set<ForeignKey> foreignKeys = new HashSet<Table.ForeignKey>();
 
 	public Table(String name, String alias) {
 		super();
@@ -38,8 +118,8 @@ public class Table implements SQLOutputable {
 		return Collections.unmodifiableList(columns);
 	}
 
-	public Map<Column, Column> getForeignKeys() {
-		return Collections.unmodifiableMap(foreignKeys);
+	public Set<ForeignKey> getForeignKeys() {
+		return Collections.unmodifiableSet(foreignKeys);
 	}
 
 	public Table as(String alias) {
@@ -47,8 +127,8 @@ public class Table implements SQLOutputable {
 		for (Column c : columns) {
 			table.get(c);
 		}
-		for (Entry<Column, Column> entry : foreignKeys.entrySet()) {
-			table.foreignKeys.put(table.get(entry.getKey()),entry.getValue());
+		for (ForeignKey fk : foreignKeys) {
+			table.foreignKeys.add(fk.duplicateFor(table));
 		}
 		return table;
 	}
@@ -68,15 +148,9 @@ public class Table implements SQLOutputable {
 	}
 
 	public void addForeignKey(Column origin, Column reference) {
-		foreignKeys.put(origin, reference);
-		reference.getTable().foreignKeys.put(reference, origin);
-	}
-	
-	public Column getForeignColumn(Column origin){
-		return foreignKeys.get(origin);
-	}
-	public Column getForeignColumn(String origin){
-		return getForeignColumn(get(origin));
+		foreignKeys.add(new ForeignKey(origin, reference));
+		Table table = reference.getTable();
+		table.foreignKeys.add(table.new ForeignKey(reference, origin));
 	}
 
 	@Override
@@ -125,17 +199,18 @@ public class Table implements SQLOutputable {
 			return false;
 		return true;
 	}
-	
+
 	/**
 	 * Checks if is the same table (same name).
-	 *
-	 * @param table the table
+	 * 
+	 * @param table
+	 *            the table
 	 * @return true, if is same table
 	 */
 	public boolean isSameTable(Table table) {
-		if(table==null)
-		return false;
-		
+		if (table == null)
+			return false;
+
 		return name.equals(table.name);
 	}
 

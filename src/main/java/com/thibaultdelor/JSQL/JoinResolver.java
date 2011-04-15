@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.thibaultdelor.JSQL.Table.ForeignKey;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.join.ExplicitJoin.JoinType;
@@ -29,16 +30,18 @@ public class JoinResolver {
 
 	/**
 	 * Constructor of JoinResolver.
-	 *
-	 * @param query the query to complete
-	 * @param depth the maximum number of joins to add by table
+	 * 
+	 * @param query
+	 *            the query to complete
+	 * @param depth
+	 *            the maximum number of joins to add by table
 	 */
 	public JoinResolver(SelectQuery query, int depth) {
 		super();
 		this.query = query;
 		this.depth = depth;
 	}
-	
+
 	public int getDepth() {
 		return depth;
 	}
@@ -49,8 +52,9 @@ public class JoinResolver {
 
 	/**
 	 * Auto add join clauses thanks to foreign keys.
-	 *
-	 * @param joinType the join type
+	 * 
+	 * @param joinType
+	 *            the join type
 	 */
 	public void resolve(JoinType joinType) {
 		Set<Table> existingTables = query.getExistingTables();
@@ -89,11 +93,11 @@ public class JoinResolver {
 
 	}
 
-
 	/**
 	 * Builds the nodes hierarchy thanks to foreign keys of existing tables.
-	 *
-	 * @param existingTables the existing tables in query
+	 * 
+	 * @param existingTables
+	 *            the existing tables in query
 	 */
 	private void buildNodes(Set<Table> existingTables) {
 		nodes.clear();
@@ -105,8 +109,9 @@ public class JoinResolver {
 
 	/**
 	 * Adds nodes in the nodes hierarchy.
-	 *
-	 * @param baseNodes nodes to explore
+	 * 
+	 * @param baseNodes
+	 *            nodes to explore
 	 */
 	private void addJoinNodes(Collection<TableNode> baseNodes) {
 		ArrayList<TableNode> addedNode = new ArrayList<JoinResolver.TableNode>();
@@ -114,13 +119,11 @@ public class JoinResolver {
 			if (tableNode.depth > depth)
 				continue;
 
-			for (Entry<Column, Column> fk : tableNode.table.getForeignKeys()
-					.entrySet()) {
-				Table remotetable = fk.getValue().getTable();
+			for (ForeignKey fk : tableNode.table.getForeignKeys()) {
+				Table remotetable = fk.getRemoteColumn().getTable();
 				TableNode myNode = findNodeByTableName(remotetable.getName());
 				if (myNode == null) {
-					myNode = new TableNode(remotetable, tableNode.depth + 1, fk
-							.getValue().getName(), tableNode, false);
+					myNode = new TableNode(remotetable, tableNode.depth + 1, fk, tableNode, false);
 					nodes.add(myNode);
 					addedNode.add(myNode);
 				} else {
@@ -151,10 +154,9 @@ public class JoinResolver {
 
 			// update myNode property to use this better path
 			myNode.bestForeignKey = null;
-			for (Entry<Column, Column> fk : myNode.table.getForeignKeys()
-					.entrySet()) {
-				if (fk.getValue().getTable().isSameTable(baseNode.table)) {
-					myNode.bestForeignKey = fk.getValue().getName();
+			for (ForeignKey fk : myNode.table.getForeignKeys()) {
+				if (fk.getRemoteColumn().getTable().isSameTable(baseNode.table)) {
+					myNode.bestForeignKey = fk;
 					break;
 				}
 			}
@@ -166,9 +168,8 @@ public class JoinResolver {
 			myNode.closestNode = baseNode;
 
 			// recursively update childs
-			for (Entry<Column, Column> fk : myNode.table.getForeignKeys()
-					.entrySet()) {
-				TableNode child = findNodeByTableName(fk.getValue().getTable()
+			for (ForeignKey fk : myNode.table.getForeignKeys()) {
+				TableNode child = findNodeByTableName(fk.getRemoteColumn().getTable()
 						.getName());
 				if (child != null)
 					updateBestNode(child, myNode);
@@ -177,18 +178,20 @@ public class JoinResolver {
 	}
 
 	/**
-	 * Include the table of the node in  thequery with a join Clause.
-	 *
-	 * @param node the node to include in query
-	 * @param joinType the join type
+	 * Include the table of the node in thequery with a join Clause.
+	 * 
+	 * @param node
+	 *            the node to include in query
+	 * @param joinType
+	 *            the join type
 	 */
 	private void includeNodeInQuery(TableNode node, JoinType joinType) {
 		if (node.inQuery)
 			return;
 		includeNodeInQuery(node.closestNode, joinType);
 
-		Column col = node.table.get(node.bestForeignKey);
-		Column fk = node.table.getForeignColumn(node.bestForeignKey);
+		Column col = node.bestForeignKey.getPrimaryKey();
+		Column fk = node.bestForeignKey.getForeignKey();
 		BinaryCriterion criterion = new BinaryCriterion(col,
 				BinaryOperator.EQUAL, fk);
 		query.join(new OnJoin(node.table, criterion));
@@ -204,33 +207,34 @@ public class JoinResolver {
 	}
 
 	/**
-	 * Represent a table of the database with extra information allowing to find the best path to existing tables in the database
+	 * Represent a table of the database with extra information allowing to find
+	 * the best path to existing tables in the database
 	 */
 	private static class TableNode {
-		
+
 		/** The base table. */
 		Table table;
-		
+
 		/** The number of link needed to access an existing table . */
 		int depth;
-		
+
 		/** The foreign key used to join tables. */
-		String bestForeignKey;
-		
+		ForeignKey bestForeignKey;
+
 		/** The closest node. */
 		TableNode closestNode;
-		
+
 		/** inQuery is true if the table is already joined in the query. */
 		boolean inQuery;
 
 		TableNode() {
 		}
 
-		TableNode(Table table, int depth, String bestForeignKey,
+		TableNode(Table table, int depth, ForeignKey fk,
 				TableNode closestNode, boolean inQuery) {
 			this.table = table;
 			this.depth = depth;
-			this.bestForeignKey = bestForeignKey;
+			this.bestForeignKey = fk;
 			this.closestNode = closestNode;
 			this.inQuery = inQuery;
 		}
@@ -239,8 +243,7 @@ public class JoinResolver {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime
-					* result
+			result = prime * result
 					+ ((table.getName() == null) ? 0 : table.getName()
 							.hashCode());
 			return result;
@@ -278,7 +281,6 @@ public class JoinResolver {
 			return builder.toString();
 		}
 
-		
 	}
 
 }

@@ -1,11 +1,6 @@
 package com.thibaultdelor.JSQL;
 
-import static com.thibaultdelor.JSQL.DemoDB.SELL;
-import static com.thibaultdelor.JSQL.DemoDB.SELL_DATE;
-import static com.thibaultdelor.JSQL.DemoDB.SELL_USER_ID;
-import static com.thibaultdelor.JSQL.DemoDB.USER;
-import static com.thibaultdelor.JSQL.DemoDB.USER_ID;
-import static com.thibaultdelor.JSQL.DemoDB.USER_NAME;
+import static com.thibaultdelor.JSQL.DemoDB.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,7 +21,7 @@ public class JoinQueryTest {
 		
 		String expected = "select user.name, sell.date" +
 		" from user, sell" +
-		" where sell.id=user.id";
+		" where sell.user_id=user.id";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
@@ -46,7 +41,7 @@ public class JoinQueryTest {
 		
 		String expected = "select user.name, sell.date" +
 		" from user, sell" +
-		" where sell.id=user.id";
+		" where sell.user_id=user.id";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}
@@ -61,7 +56,7 @@ public class JoinQueryTest {
 		
 		String expected = "select user.name , sell.date" +
 		" from user" +
-		" inner join sell on sell.id=user.id";
+		" inner join sell on sell.user_id=user.id";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 		
 	}

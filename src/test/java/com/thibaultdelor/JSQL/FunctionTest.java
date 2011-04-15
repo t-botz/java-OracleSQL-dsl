@@ -13,8 +13,8 @@ public class FunctionTest {
 	@Test
 	public void simpleFunctionQuery() {
 		SelectQuery s = new SelectQuery();
-		s.select(new SingleArgumentFunction("myFunc", USER_NAME)).from(USER);
-		String expected = "select myFunc(user.name)" +
+		s.select(new SingleArgumentFunction("count", USER_NAME)).from(USER);
+		String expected = "select count(user.name)" +
 				" from user";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
@@ -22,8 +22,8 @@ public class FunctionTest {
 	@Test
 	public void distinctFunctionQuery() {
 		SelectQuery s = new SelectQuery();
-		s.select(new SingleArgumentFunction("myFunc", USER_NAME, true)).from(USER);
-		String expected = "select myFunc(distinct user.name)" +
+		s.select(new SingleArgumentFunction("count", USER_NAME, true)).from(USER);
+		String expected = "select count(distinct user.name)" +
 		" from user";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
@@ -31,8 +31,8 @@ public class FunctionTest {
 	@Test
 	public void multipleArgFunctionQuery() {
 		SelectQuery s = new SelectQuery();
-		s.select(new SimpleFunction("myFunc", USER_NAME, USER_ID)).from(USER);
-		String expected = "select myFunc(user.name,user.id)" +
+		s.select(new SimpleFunction("funct", USER_NAME, USER_ID)).from(USER);
+		String expected = "select funct(user.name,user.id)" +
 		" from user";
 		Assert.assertThat(s.toSQLString(), new SQLQueryMatcher(expected));
 	}
