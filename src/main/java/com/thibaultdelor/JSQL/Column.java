@@ -10,14 +10,14 @@ public class Column implements SQLOutputable {
 	private boolean isInUsing = false;
 	
 	
-	Column(Table table, String name, String alias) {
+	protected Column(Table table, String name, String alias) {
 		super();
 		this.table = table;
 		this.name = name;
 		this.alias = alias;
 	}
 	
-	Column(Table table, String name) {
+	protected Column(Table table, String name) {
 		this(table, name, null);
 	}
 	

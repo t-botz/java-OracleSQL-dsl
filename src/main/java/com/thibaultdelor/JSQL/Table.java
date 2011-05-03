@@ -143,8 +143,8 @@ public class Table implements SQLOutputable {
 		return c;
 	}
 
-	public Column get(Column userName) {
-		return get(userName.getName());
+	public Column get(Column col) {
+		return get(col.getName());
 	}
 
 	public void addForeignKey(Column origin, Column reference) {
