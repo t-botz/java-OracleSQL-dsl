@@ -5,6 +5,7 @@ import java.util.Set;
 public class Hint implements SQLOutputable{
 
 	public static final Hint ORDERED = new Hint("ORDERED");
+	public static final Hint NOREWRITE = new Hint("NOREWRITE");
 	
 	private String output;
 	

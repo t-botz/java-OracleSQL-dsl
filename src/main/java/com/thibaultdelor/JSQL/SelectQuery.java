@@ -21,7 +21,7 @@ import com.thibaultdelor.JSQL.literal.LiteralSet;
 
 public class SelectQuery {
 
-	private final List<Hint> hints = new ArrayList<Hint>(0);
+	private final List<SQLOutputable> hints = new ArrayList<SQLOutputable>(0);
 	private final List<SQLOutputable> columns = new ArrayList<SQLOutputable>();
 	private final LinkedHashSet<Table> from = new LinkedHashSet<Table>();
 	private final List<JoinClause> join = new ArrayList<JoinClause>();
@@ -45,8 +45,8 @@ public class SelectQuery {
 		return this;
 	}
 
-	public SelectQuery hints(Hint... hints) {
-		for (Hint hint : hints) {
+	public SelectQuery hints(SQLOutputable... hints) {
+		for (SQLOutputable hint : hints) {
 			if (this.hints.add(hint))
 				hint.addNeededTables(allReferencedTables);
 		}
