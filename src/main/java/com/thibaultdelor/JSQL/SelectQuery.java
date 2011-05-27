@@ -97,8 +97,8 @@ public class SelectQuery {
 		return this;
 	}
 
-	public SelectQuery whereIn(Column userId, String... values) {
-		return where(new InCriterion(userId, new LiteralSet(values)));
+	public SelectQuery whereIn(Column col, String... values) {
+		return where(new InCriterion(col, new LiteralSet(values)));
 	}
 
 	public SelectQuery groupBy(SQLOutputable groupCol) {

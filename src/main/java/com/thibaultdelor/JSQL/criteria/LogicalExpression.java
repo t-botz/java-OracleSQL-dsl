@@ -27,8 +27,15 @@ public class LogicalExpression implements Criterion {
 		this("(", separator, ")", criteria);
 	}
 
+	/**
+	 * @throws IllegalStateException if the logical Expression has no criterion
+	 * @see com.thibaultdelor.JSQL.SQLOutputable#output(java.lang.StringBuilder, com.thibaultdelor.JSQL.SQLOutputable.SQLContext)
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void output(StringBuilder sb, SQLContext context) {
+	public void output(StringBuilder sb, SQLContext context) throws IllegalStateException{
+		if(criteria.size()==0)
+			throw new IllegalStateException("The logical expression has no criteria");
 		sb.append(startDelimiter);
 		OutputUtils.strJoin(criteria, separator, sb, context);
 		sb.append(endDelimiter);
