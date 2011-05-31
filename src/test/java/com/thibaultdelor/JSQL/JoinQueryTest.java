@@ -9,6 +9,9 @@ import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.join.ExplicitJoin.JoinType;
 
+import com.thibaultdelor.junit.sql.junit.SQLQueryMatcher;
+
+
 public class JoinQueryTest {
 
 	@Test

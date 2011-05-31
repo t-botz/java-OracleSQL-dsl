@@ -6,6 +6,7 @@ import static com.thibaultdelor.JSQL.DemoDB.USER_NAME;
 
 import org.junit.Assert;
 import org.junit.Test;
+import com.thibaultdelor.junit.sql.junit.SQLQueryMatcher;
 
 public class WhereCriterionTest {
 

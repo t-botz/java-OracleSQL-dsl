@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import com.thibaultdelor.JSQL.literal.functions.SimpleFunction;
 import com.thibaultdelor.JSQL.literal.functions.SingleArgumentFunction;
+import com.thibaultdelor.junit.sql.junit.SQLQueryMatcher;
 
 public class FunctionTest {
 	
