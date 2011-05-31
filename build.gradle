@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 
 sourceCompatibility = 1.6
-version = '0.5'
+version = '0.6'
 
 manifest.mainAttributes(
     'Implementation-Title': 'java-OracleSQL-dsl',
@@ -11,8 +11,13 @@ manifest.mainAttributes(
 
 repositories {
     mavenCentral()
+    flatDir name: 'localRepository', dirs: new File(gradle.gradleUserHomeDir,'repo')
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version:'4.+'
+	testCompile group: 'com.thibaultdelor', name: 'JunitSQLMatcher', version: '+'
+}
+eclipseClasspath {
+	downloadSources = false; // required for eclipseClasspath to work
 }

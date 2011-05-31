@@ -12,6 +12,7 @@ import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.literal.SimpleLiteral;
 import com.thibaultdelor.JSQL.literal.StringLiteral;
 import com.thibaultdelor.JSQL.literal.functions.SimpleFunction;
+import com.thibaultdelor.junit.sql.junit.SQLQueryMatcher;
 
 public class SimpleQueryTest {
 

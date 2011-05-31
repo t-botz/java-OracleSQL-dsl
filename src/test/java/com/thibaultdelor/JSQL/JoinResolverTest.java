@@ -8,6 +8,7 @@ import org.junit.Test;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion;
 import com.thibaultdelor.JSQL.criteria.BinaryCriterion.BinaryOperator;
 import com.thibaultdelor.JSQL.literal.PrimitiveLiteral;
+import com.thibaultdelor.junit.sql.junit.SQLQueryMatcher;
 
 public class JoinResolverTest {
 	
