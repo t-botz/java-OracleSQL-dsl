@@ -5,7 +5,7 @@ sourceCompatibility = '1.6'
 targetCompatibility  = '1.6'
 
 group = 'com.thibaultdelor'
-version = '0.6'
+version = '0.7'
 
 repositories {
     mavenCentral()

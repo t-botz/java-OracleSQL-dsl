@@ -4,20 +4,20 @@ import java.util.Set;
 
 public class Column implements SQLOutputable {
 
-	private final Table table;
+	private final ITable table;
 	private final String name;
 	private final String alias;
 	private boolean isInUsing = false;
 	
 	
-	protected Column(Table table, String name, String alias) {
+	protected Column(ITable table, String name, String alias) {
 		super();
 		this.table = table;
 		this.name = name;
 		this.alias = alias;
 	}
 	
-	protected Column(Table table, String name) {
+	protected Column(ITable table, String name) {
 		this(table, name, null);
 	}
 	
@@ -96,7 +96,7 @@ public class Column implements SQLOutputable {
 				+ "]";
 	}
 
-	public Table getTable() {
+	public ITable getTable() {
 		return table;
 	}
 
@@ -111,8 +111,9 @@ public class Column implements SQLOutputable {
 
 	@Override
 	public void addNeededTables(Set<Table> tables) {
-		tables.add(table);
-		
+		if (table instanceof Table) {
+			tables.add((Table) table);
+		}
 	}
 
 	

@@ -23,7 +23,7 @@ public class SelectQuery {
 
 	private final List<SQLOutputable> hints = new ArrayList<SQLOutputable>(0);
 	private final List<SQLOutputable> columns = new ArrayList<SQLOutputable>();
-	private final LinkedHashSet<Table> from = new LinkedHashSet<Table>();
+	private final LinkedHashSet<ITable> from = new LinkedHashSet<ITable>();
 	private final List<JoinClause> join = new ArrayList<JoinClause>();
 	private final LogicalExpression where = new LogicalExpression("", "\nAND ",
 			"");
@@ -53,7 +53,7 @@ public class SelectQuery {
 		return this;
 	}
 
-	public SelectQuery from(Table t) {
+	public SelectQuery from(ITable t) {
 		if (from.add(t))
 			t.addNeededTables(allReferencedTables);
 		return this;
@@ -71,21 +71,21 @@ public class SelectQuery {
 		return this;
 	}
 
-	public SelectQuery join(Table joinTable, Criterion criterion) {
+	public SelectQuery join(ITable joinTable, Criterion criterion) {
 		return join(new ImplicitJoin(joinTable, criterion));
 	}
 
-	public SelectQuery join(Table joinTable, Column mycolumn,
+	public SelectQuery join(ITable joinTable, Column mycolumn,
 			Column foreigncolumn) {
 		return join(joinTable, new BinaryCriterion(mycolumn,
 				BinaryOperator.EQUAL, foreigncolumn));
 	}
 
-	public SelectQuery join(JoinType type, Table joinTable, Criterion criterion) {
+	public SelectQuery join(JoinType type, ITable joinTable, Criterion criterion) {
 		return join(new OnJoin(type, joinTable, criterion));
 	}
 
-	public SelectQuery join(JoinType type, Table joinTable, Column mycolumn,
+	public SelectQuery join(JoinType type, ITable joinTable, Column mycolumn,
 			Column foreigncolumn) {
 		return join(type, joinTable, new BinaryCriterion(mycolumn,
 				BinaryOperator.EQUAL, foreigncolumn));
@@ -99,6 +99,9 @@ public class SelectQuery {
 
 	public SelectQuery whereIn(Column col, String... values) {
 		return where(new InCriterion(col, new LiteralSet(values)));
+	}
+	public SelectQuery whereIn(Column col, SubQueryTable sq) {
+		return where(new InCriterion(col, sq));
 	}
 
 	public SelectQuery groupBy(SQLOutputable groupCol) {
@@ -124,6 +127,10 @@ public class SelectQuery {
 		return orderBy(new OrderClause(c, asc));
 	}
 
+	
+	public SubQueryTable as(String alias){
+		return new SubQueryTable(this, alias);
+	}
 	/**
 	 * Add all necessary missing tables in the from clause.
 	 */
@@ -184,8 +191,8 @@ public class SelectQuery {
 		joinResolver.resolve(joinType);
 	}
 	
-	Set<Table> getExistingTables() {
-		Set<Table> joinedTables = new HashSet<Table>(from);
+	Set<ITable> getExistingTables() {
+		Set<ITable> joinedTables = new HashSet<ITable>(from);
 		for (JoinClause jc : join) {
 			joinedTables.add(jc.getJoinTable());
 		}
@@ -196,13 +203,15 @@ public class SelectQuery {
 		missingTables.removeAll(from);
 		Set<Table> joinedTables = new HashSet<Table>(4);
 		for (JoinClause jc : join) {
-			joinedTables.add(jc.getJoinTable());
+			if (jc.getJoinTable() instanceof Table) {
+				joinedTables.add((Table) jc.getJoinTable());
+			}
 		}
 		missingTables.removeAll(joinedTables);
 		return missingTables;
 	}
 
-	public String toSQLString() {
+	public StringBuilder toSQLStringBuilder() {
 		StringBuilder query = new StringBuilder();
 		appendSelect(query);
 		appendFrom(query);
@@ -211,7 +220,11 @@ public class SelectQuery {
 		appendHaving(query);
 		appendOrderBy(query);
 
-		return query.toString();
+		return query;
+	}
+	
+	public String toSQLString() {
+		return toSQLStringBuilder().toString();
 	}
 
 	private void appendSelect(StringBuilder query) {

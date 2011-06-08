@@ -57,7 +57,7 @@ public class JoinResolver {
 	 *            the join type
 	 */
 	public void resolve(JoinType joinType) {
-		Set<Table> existingTables = query.getExistingTables();
+		Set<ITable> existingTables = query.getExistingTables();
 		buildNodes(existingTables);
 		Set<Table> missingTables = query.getMissingTables();
 		if (existingTables.size() == 0) {
@@ -99,10 +99,12 @@ public class JoinResolver {
 	 * @param existingTables
 	 *            the existing tables in query
 	 */
-	private void buildNodes(Set<Table> existingTables) {
+	private void buildNodes(Set<ITable> existingTables) {
 		nodes.clear();
-		for (Table table : existingTables) {
-			nodes.add(new TableNode(table, 0, null, null, true));
+		for (ITable table : existingTables) {
+			if (table instanceof Table) {
+				nodes.add(new TableNode((Table) table, 0, null, null, true));
+			}
 		}
 		addJoinNodes(new ArrayList<JoinResolver.TableNode>(nodes));
 	}
@@ -120,7 +122,7 @@ public class JoinResolver {
 				continue;
 
 			for (ForeignKey fk : tableNode.table.getForeignKeys()) {
-				Table remotetable = fk.getRemoteColumn().getTable();
+				Table remotetable = (Table) fk.getRemoteColumn().getTable();
 				TableNode myNode = findNodeByTableName(remotetable.getName());
 				if (myNode == null) {
 					myNode = new TableNode(remotetable, tableNode.depth + 1, fk, tableNode, false);
@@ -155,7 +157,7 @@ public class JoinResolver {
 			// update myNode property to use this better path
 			myNode.bestForeignKey = null;
 			for (ForeignKey fk : myNode.table.getForeignKeys()) {
-				if (fk.getRemoteColumn().getTable().isSameTable(baseNode.table)) {
+				if (((Table) fk.getRemoteColumn().getTable()).isSameTable(baseNode.table)) {
 					myNode.bestForeignKey = fk;
 					break;
 				}
@@ -169,7 +171,7 @@ public class JoinResolver {
 
 			// recursively update childs
 			for (ForeignKey fk : myNode.table.getForeignKeys()) {
-				TableNode child = findNodeByTableName(fk.getRemoteColumn().getTable()
+				TableNode child = findNodeByTableName(((Table) fk.getRemoteColumn().getTable())
 						.getName());
 				if (child != null)
 					updateBestNode(child, myNode);

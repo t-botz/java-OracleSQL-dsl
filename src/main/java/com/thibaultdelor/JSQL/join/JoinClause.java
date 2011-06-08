@@ -1,7 +1,7 @@
 package com.thibaultdelor.JSQL.join;
 
-import com.thibaultdelor.JSQL.Table;
+import com.thibaultdelor.JSQL.ITable;
 
 public interface JoinClause {
-	Table getJoinTable();
+	ITable getJoinTable();
 }

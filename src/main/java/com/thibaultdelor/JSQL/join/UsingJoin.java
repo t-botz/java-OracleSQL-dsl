@@ -3,6 +3,7 @@ package com.thibaultdelor.JSQL.join;
 import java.util.Set;
 
 import com.thibaultdelor.JSQL.Column;
+import com.thibaultdelor.JSQL.ITable;
 import com.thibaultdelor.JSQL.SQLOutputable;
 import com.thibaultdelor.JSQL.Table;
 
@@ -32,7 +33,7 @@ public class UsingJoin implements ExplicitJoin{
 	}
 
 	@Override
-	public Table getJoinTable() {
+	public ITable getJoinTable() {
 		return joinColumn.getTable();
 	}
 

@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Table implements SQLOutputable {
+public class Table implements ITable {
 
 	class ForeignKey {
 		private Column foreignKey;
@@ -106,6 +106,7 @@ public class Table implements SQLOutputable {
 		this(name, null);
 	}
 
+	@Override
 	public String getAlias() {
 		return (alias == null) ? name : alias;
 	}
@@ -133,6 +134,7 @@ public class Table implements SQLOutputable {
 		return table;
 	}
 
+	@Override
 	public Column get(String colName) {
 		Column c = new Column(this, colName);
 		int indexOf = columns.indexOf(c);
@@ -143,13 +145,17 @@ public class Table implements SQLOutputable {
 		return c;
 	}
 
+	@Override
 	public Column get(Column col) {
 		return get(col.getName());
 	}
 
 	public void addForeignKey(Column origin, Column reference) {
 		foreignKeys.add(new ForeignKey(origin, reference));
-		Table table = reference.getTable();
+		if (! (reference.getTable() instanceof Table)) {
+			throw new IllegalArgumentException(reference+" is not in a concrete table and so cannot be used in a foreign key");
+		}
+		Table table = (Table) reference.getTable();
 		table.foreignKeys.add(table.new ForeignKey(reference, origin));
 	}
 
