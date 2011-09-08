@@ -4,16 +4,16 @@ import java.util.Set;
 
 public class OrderClause implements SQLOutputable {
 
-	private final Column column;
+	private final SQLOutputable column;
 	private final boolean asc;
 	
 	
-	public OrderClause(Column column, boolean asc) {
+	public OrderClause(SQLOutputable column, boolean asc) {
 		this.column = column;
 		this.asc = asc;
 	}
 	
-	public OrderClause(Column column) {
+	public OrderClause(SQLOutputable column) {
 		this(column, true);
 	}
 	

@@ -1,5 +1,9 @@
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'eclipse'
+buildscript {
+    apply from: 'https://github.com/thibaultdelor/gradle_cobertura/raw/master/ivy/gradle_cobertura/gradle_cobertura/1.0-rc4/coberturainit.gradle'
+}
 
 sourceCompatibility = '1.6'
 targetCompatibility  = '1.6'
@@ -9,11 +13,10 @@ version = '0.7'
 
 repositories {
     mavenCentral()
-    flatDir name: 'localRepository', dirs: new File(gradle.gradleUserHomeDir,'repo')
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version:'4.+'
+    testCompile group: 'junit', name: 'junit', version:'4.8.2'
 	testCompile group: 'com.thibaultdelor', name: 'JunitSQLMatcher', version: '+'
 }
 

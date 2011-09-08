@@ -5,6 +5,10 @@ public class PrimitiveLiteral extends SimpleLiteral {
 	public PrimitiveLiteral(long i) {
 		super(Long.toString(i));
 	}
+
+	public PrimitiveLiteral(int i) {
+		super(Integer.toString(i));
+	}
 	
 	public PrimitiveLiteral(double i) {
 		super(Double.toString(i));

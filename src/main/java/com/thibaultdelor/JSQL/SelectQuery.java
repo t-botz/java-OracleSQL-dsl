@@ -19,24 +19,32 @@ import com.thibaultdelor.JSQL.join.JoinClause;
 import com.thibaultdelor.JSQL.join.OnJoin;
 import com.thibaultdelor.JSQL.literal.LiteralSet;
 
-public class SelectQuery {
+public class SelectQuery implements Distinctable {
 
 	private final List<SQLOutputable> hints = new ArrayList<SQLOutputable>(0);
 	private final List<SQLOutputable> columns = new ArrayList<SQLOutputable>();
 	private final LinkedHashSet<ITable> from = new LinkedHashSet<ITable>();
 	private final List<JoinClause> join = new ArrayList<JoinClause>();
-	private final LogicalExpression where = new LogicalExpression("", "\nAND ",
-			"");
+	private final LogicalExpression where = new LogicalExpression("", "\nAND ","");
 	private final List<SQLOutputable> groupBy = new ArrayList<SQLOutputable>();
 	private final List<Criterion> having = new ArrayList<Criterion>();
 	private final List<OrderClause> orderBy = new ArrayList<OrderClause>();
 
 	private final Set<Table> allReferencedTables = new HashSet<Table>(4);
 	
+	private boolean distinct;
 	
 	/** The join resolver use for auto join (lazy initialized). */
 	private JoinResolver joinResolver = null;
 
+	public SelectQuery select(int position, SQLOutputable... cols) {
+		for (SQLOutputable c : cols) {
+			columns.add(position++,c);
+			c.addNeededTables(allReferencedTables);
+		}
+		return this;
+	}
+	
 	public SelectQuery select(SQLOutputable... cols) {
 		for (SQLOutputable c : cols) {
 			if (columns.add(c))
@@ -53,6 +61,14 @@ public class SelectQuery {
 		return this;
 	}
 
+	public boolean isDistinct() {
+		return distinct;
+	}
+
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
+	}
+	
 	public SelectQuery from(ITable t) {
 		if (from.add(t))
 			t.addNeededTables(allReferencedTables);
@@ -100,13 +116,19 @@ public class SelectQuery {
 	public SelectQuery whereIn(Column col, String... values) {
 		return where(new InCriterion(col, new LiteralSet(values)));
 	}
+
+	public SelectQuery whereIn(Column col, LiteralSet values) {
+		return where(new InCriterion(col, values));
+	}
 	public SelectQuery whereIn(Column col, SubQueryTable sq) {
 		return where(new InCriterion(col, sq));
 	}
 
-	public SelectQuery groupBy(SQLOutputable groupCol) {
-		if (groupBy.add(groupCol))
-			groupCol.addNeededTables(allReferencedTables);
+	public SelectQuery groupBy(SQLOutputable... groupCol) {
+		for (SQLOutputable col : groupCol) {
+			groupBy.add(col);
+			col.addNeededTables(allReferencedTables);
+		}
 		return this;
 
 	}
@@ -123,8 +145,12 @@ public class SelectQuery {
 		return this;
 	}
 
-	public SelectQuery orderBy(Column c, boolean asc) {
+	public SelectQuery orderBy(SQLOutputable c, boolean asc) {
 		return orderBy(new OrderClause(c, asc));
+	}
+
+	public SelectQuery orderBy(SQLOutputable c) {
+		return orderBy(c, true);
 	}
 
 	
@@ -234,6 +260,8 @@ public class SelectQuery {
 			OutputUtils.strJoin(hints, " ", query, SQLContext.SELECT);
 			query.append(" */ ");
 		}
+		if(distinct)
+			query.append("DISTINCT ");
 		OutputUtils.strJoin(columns, ", ", query, SQLContext.SELECT);
 	}
 

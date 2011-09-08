@@ -20,6 +20,24 @@ public class LiteralSet implements SQLOutputable {
 		}
 	}
 	
+	public LiteralSet(long... values) {
+		for (long l : values) {
+			this.values.add(new PrimitiveLiteral(l));
+		}
+	}
+
+	public LiteralSet(int... values) {
+		for (int i : values) {
+			this.values.add(new PrimitiveLiteral(i));
+		}
+	}
+	
+	public LiteralSet(double... values) {
+		for (double d : values) {
+			this.values.add(new PrimitiveLiteral(d));
+		}
+	}
+	
 	@Override
 	public void output(StringBuilder sb, SQLContext context) {
 		OutputUtils.strJoin(values, separator, sb, context);

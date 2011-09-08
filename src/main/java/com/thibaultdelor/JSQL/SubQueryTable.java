@@ -56,4 +56,14 @@ public class SubQueryTable implements ITable {
 		return get(col.getName());
 	}
 
+	/**
+	 * Gets the sub-query.
+	 *
+	 * @return the sub-query
+	 */
+	public SelectQuery getSubQuery() {
+		return query;
+	}
+
+	
 }

@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 
+import com.thibaultdelor.JSQL.Distinctable;
 import com.thibaultdelor.JSQL.SQLOutputable;
 import com.thibaultdelor.JSQL.Table;
 import com.thibaultdelor.JSQL.literal.SimpleLiteral;
 
-public class SingleArgumentFunction implements Function{
+public class SingleArgumentFunction implements Function,Distinctable{
 	
 	private final String functionName;
-	private final boolean distinct;
+	private boolean distinct;
 	private final SQLOutputable arg;
 
 	public SingleArgumentFunction(String functName) {
@@ -28,6 +29,14 @@ public class SingleArgumentFunction implements Function{
 		this.distinct = distinct;
 	}
 	
+	public boolean isDistinct() {
+		return distinct;
+	}
+
+	public void setDistinct(boolean distinct) {
+		this.distinct = distinct;
+	}
+
 	@Override
 	public void output(StringBuilder sb, SQLContext context) {
 		sb.append(functionName);
