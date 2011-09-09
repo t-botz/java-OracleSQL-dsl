@@ -12,6 +12,7 @@ group = 'com.thibaultdelor'
 version = '0.7'
 
 repositories {
+	mavenLocal()
     mavenCentral()
 }
 
@@ -23,7 +24,6 @@ dependencies {
 eclipseClasspath {
 	downloadSources = false; // required for eclipseClasspath to work
 }
-
 manifest.mainAttributes(
     'Implementation-Title': 'java-OracleSQL-dsl',
     'Implementation-Version': version
